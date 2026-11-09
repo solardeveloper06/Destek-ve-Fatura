@@ -22,7 +22,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
         }
         h2 {
             color: #2c3e50;
@@ -44,6 +44,15 @@
             border-radius: 5px;
             box-sizing: border-box;
         }
+        .remote-box {
+            display: none;
+            background-color: #f8f9fa;
+            border: 1px dashed #27ae60;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
         button {
             width: 100%;
             background-color: #27ae60;
@@ -64,6 +73,7 @@
             background: #e8f8f5;
             border-left: 5px solid #27ae60;
             display: none;
+            line-height: 1.6;
         }
     </style>
 </head>
@@ -86,19 +96,55 @@
             </div>
 
             <div class="form-group">
+                <label>Aylık Üretim (kWh):</label>
+                <input type="number" step="0.01" name="generation_kwh" placeholder="Örn: 12000" required>
+            </div>
+
+            <div class="form-group">
+                <label>Aylık Tüketim (kWh):</label>
+                <input type="number" step="0.01" name="consumption_kwh" placeholder="Örn: 10000" required>
+            </div>
+
+            <!-- Ayrı Yer Tüketimi Seçeneği -->
+            <div class="form-group">
+                <label>Ayrı Yer Tüketimi Var mı?</label>
+                <select name="has_remote" id="hasRemoteSelect">
+                    <option value="hayir">Yok</option>
+                    <option value="evet">Var</option>
+                </select>
+            </div>
+
+            <!-- Var Seçilince Açılacak Alanlar -->
+            <div class="remote-box" id="remoteBox">
+                <div class="form-group">
+                    <label>Ayrı Yer Tüketim Miktarı (kWh):</label>
+                    <input type="number" step="0.01" name="remote_consumption_kwh" id="remoteConsumptionInput" placeholder="Örn: 4500">
+                </div>
+                <div class="form-group">
+                    <label>Ayrı Yer Tarifesi:</label>
+                    <select name="remote_tariff">
+                        <option value="mesken">Mesken</option>
+                        <option value="ticarethane">Ticarethane</option>
+                        <option value="sanayi">Sanayi</option>
+                        <option value="tarimsal">Tarımsal</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
                 <label>Trafo Kaybı Durumu:</label>
-                <select name="transformer_loss_status" id="transformerStatus">
+                <select name="transformer_loss_status">
                     <option value="yok">Yok</option>
                     <option value="var">Var</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label>Tarife Seçin:</label>
+                <label>Ana Tesis Tarifesi:</label>
                 <select name="tariff">
-                    <option value="mesken">Mesken</option>
                     <option value="ticarethane">Ticarethane</option>
                     <option value="sanayi">Sanayi</option>
+                    <option value="mesken">Mesken</option>
                     <option value="tarimsal">Tarımsal</option>
                 </select>
             </div>
@@ -110,29 +156,20 @@
     </div>
 
     <script>
-        document.getElementById('solarForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            
-            try {
-                const response = await fetch('/calculate', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                
-                const resultDiv = document.getElementById('result');
-                resultDiv.style.display = 'block';
-                if(data.status === 'success') {
-                    resultDiv.innerHTML = `<strong>Başarılı!</strong><br>Efektif Güç: ${data.effective_power_kwe} kWe<br>Tarife: ${data.tariff}`;
-                } else {
-                    resultDiv.innerHTML = `<strong>Hata:</strong> ${data.message}`;
-                }
-            } catch (err) {
-                alert('Bir hata oluştu!');
+        // Ayrı Yer Tüketimi kutusunu dinamik açıp kapatma
+        const hasRemoteSelect = document.getElementById('hasRemoteSelect');
+        const remoteBox = document.getElementById('remoteBox');
+        const remoteConsumptionInput = document.getElementById('remoteConsumptionInput');
+
+        hasRemoteSelect.addEventListener('change', function() {
+            if (this.value === 'evet') {
+                remoteBox.style.display = 'block';
+                remoteConsumptionInput.setAttribute('required', 'required');
+            } else {
+                remoteBox.style.display = 'none';
+                remoteConsumptionInput.removeAttribute('required');
+                remoteConsumptionInput.value = '';
             }
         });
-    </script>
 
-</body>
-</html>
+        // Form Gö
