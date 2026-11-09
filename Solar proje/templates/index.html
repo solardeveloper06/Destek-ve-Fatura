@@ -1,5 +1,138 @@
-solar-proje/
-│
-├── app.py                  <-- Python arka plan motoru burada
-└── templates/              <-- Alt klasör
-    └── index.html          <-- Arayüz formumuz burada
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Enerji Analiz Paneli</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            background-color: #27ae60;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #219653;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f8f5;
+            border-left: 5px solid #27ae60;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Solar Enerji & Fatura Analizi</h2>
+        <form id="solarForm">
+            <div class="form-group">
+                <label>Kurulum Tipi:</label>
+                <select name="installation_type">
+                    <option value="cati">Çatı</option>
+                    <option value="arazi">Arazi</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Kurulu Güç (kWe):</label>
+                <input type="number" step="0.01" name="installed_power_kwe" required placeholder="Örn: 50">
+            </div>
+
+            <div class="form-group">
+                <label>Trafo Kaybı Durumu:</label>
+                <select name="transformer_loss_status" id="transformerStatus">
+                    <option value="yok">Yok</option>
+                    <option value="var">Var</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Tarife Seçin:</label>
+                <select name="tariff">
+                    <option value="mesken">Mesken</option>
+                    <option value="ticarethane">Ticarethane</option>
+                    <option value="sanayi">Sanayi</option>
+                    <option value="tarimsal">Tarımsal</option>
+                </select>
+            </div>
+
+            <button type="submit">Hesapla</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('solarForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                if(data.status === 'success') {
+                    resultDiv.innerHTML = `<strong>Başarılı!</strong><br>Efektif Güç: ${data.effective_power_kwe} kWe<br>Tarife: ${data.tariff}`;
+                } else {
+                    resultDiv.innerHTML = `<strong>Hata:</strong> ${data.message}`;
+                }
+            } catch (err) {
+                alert('Bir hata oluştu!');
+            }
+        });
+    </script>
+
+</body>
+</html>
